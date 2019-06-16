@@ -1,0 +1,119 @@
+---
+title: "EDA Project"
+author: "Ajay Kumar Upadhyay"
+date: "10 June 2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+
+
+Questions:
+
+1) Country with the highest population
+
+2) Distribution of Life Expectancy
+
+3) How is life expenctancy related to income
+
+4) Which country has highest income per region
+
+5) Outlier countries on basis on life expectancy
+
+Data Description:
+
+```{r, echo=FALSE, results='hide'}
+# Read file:
+library(ggplot2)
+library(NbClust)
+library(dplyr)
+library(tinytex)
+gapminder <- read.csv("E:\\Harrisburg University\\ANLY 506\\EDA Project\\gapminder.csv")
+
+```
+
+Narrative Summary
+
+Number of Observation 
+```{r, echo=FALSE}
+nrow(gapminder)
+```
+
+Number of variables - 6
+
+Type of Variables - Country 
+```{r, echo=FALSE}
+class(gapminder$Country)
+```
+Year
+```{r, echo=FALSE}
+class(gapminder$Year)
+```
+life
+```{r, echo=FALSE} 
+class(gapminder$life)
+```
+population 
+```{r, echo=FALSE} 
+class(gapminder$population)
+```
+income 
+```{r, echo=FALSE}
+class(gapminder$income)
+```
+region 
+```{r, echo=FALSE}
+class(gapminder$region)
+```
+
+How disperse is the data
+```{r, echo=FALSE}
+summary(gapminder)
+```
+Data wrangling
+
+```{r, echo=FALSE}
+gapminder$population <- as.numeric(gsub(",","",gapminder$population))
+gapminder1 <- gapminder %>% filter(!is.na(gapminder$population))
+```
+
+```{r, echo=FALSE}
+# Creating subset of United States Country
+population_United_States <- gapminder1 %>% filter(Country=='United States')
+
+ggplot(data= population_United_States, mapping = aes(y=Year, x=population, color="United States"))  + geom_point(data = gapminder1,color="darkgreen", aes(color="Others")) + geom_jitter() 
+```
+As shown from the graph above US has the 3rd largest population in the world. Population grew at a high rate after 1900
+
+```{r, echo=FALSE}
+hist(gapminder1$life,breaks=10,main="Distribution of life expectancy")
+```
+
+The distribution of life expectancy is right skewed which showing overall higher life expectancy
+
+
+```{r, echo=FALSE, warning=FALSE}
+plot(income~life, data = gapminder1, main = "Income Vs Life Expectancy", xlab = 'life expectancy' , ylab = 'income') + facet_wrap(~gapminder1$country, drop = TRUE)
+```
+
+The scatterplot above shows that highes income relates to higher life expectancy
+
+```{r, echo=FALSE, warning=FALSE}
+df1 <- filter(gapminder1,!is.na(gapminder1$income))
+df2 <- aggregate(df1,list(df1$region),'mean')
+barplot(df2$income,names.arg=df2$Group.1,xlab="Region",ylab="income",col="blue",
+main="Income Per Region",border="red")
+```
+Above Bar plot shows the varian of mean income for different regions which shows that the highest mean income is from middle east and north africa region while the lowest is south asia
+
+```{r, echo=FALSE}
+# Population of USA after 1950
+pop_us_after_1950 <- population_United_States %>% filter(Year > '1950')
+c <- ggplot(pop_us_after_1950, aes(x = population, y = income))
+c + geom_point()+geom_smooth(method = "lm") + scale_x_continuous(labels = scales::comma)  + labs(title="US Population vs Income after 1950")
+```
+
+Above plot shows the population trend of US population vs income after 1950
+
+
